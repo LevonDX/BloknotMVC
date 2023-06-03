@@ -10,6 +10,5 @@ namespace BloknotMVC.Controllers
         {
             return View();
         }
-
     }
 }

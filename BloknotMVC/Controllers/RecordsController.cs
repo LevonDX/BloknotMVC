@@ -30,5 +30,27 @@ namespace BloknotMVC.Controllers
 
             return View(records);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            using var context = new BloknotDBContext();
+
+            Record? record = await context.Records.FindAsync(id);
+
+            return View(record);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Edit(Record record)
+        {
+            using var context = new BloknotDBContext();
+
+            context.Records.Update(record);
+
+            await context.SaveChangesAsync();
+
+            return RedirectToAction("Index");
+        }
     }
 }

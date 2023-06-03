@@ -9,8 +9,9 @@
             <th>Name</th>
             <th>Surname</th>
             <th>Phone</th>
+            <th>Edit</th>
         </tr>
-    </thead>
+    </thead>    
     <tbody>
         @foreach (var item in Model)
         {
@@ -19,6 +20,9 @@
                 <td>@item.Name</td>
                 <td>@item.Surname</td>
                 <td>@item.Phone</td>
+                <td>
+                    <a asp-controller="Records" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
+                </td>
             </tr>
         }
     </tbody>
