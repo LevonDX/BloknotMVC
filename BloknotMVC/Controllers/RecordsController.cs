@@ -1,17 +1,30 @@
 ﻿using BloknotMVC.Data.Context;
 using BloknotMVC.Data.Entities;
+using BloknotMVC.Implementation;
+using BloknotMVC.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BloknotMVC.Controllers
 {
     public class RecordsController : Controller
     {
+        ILoggerService _logger;
+        BloknotDBContext _context;
+
+        // contructor injection
+        public RecordsController(ILoggerService loggerService, BloknotDBContext context)
+        {
+            _logger = loggerService;
+            _context = context;
+        }
+
         [HttpPost]
         public IActionResult Add(Record record)
         {
-            using var context = new BloknotDBContext();
-            context.Records.Add(record);
-            context.SaveChanges();
+            _context.Records.Add(record);
+            _context.SaveChanges();
+
+            _logger.WriteLog($"Record {record.Id} added");
 
             return RedirectToAction(nameof(Index));
         }
@@ -25,8 +38,9 @@ namespace BloknotMVC.Controllers
         [HttpGet]
         public IActionResult Index()
         {
-            using var context = new BloknotDBContext();
-            var records = context.Records.ToList();
+            var records = _context.Records.ToList();
+
+            _logger.WriteLog("Records list requested");
 
             return View(records);
         }
@@ -34,9 +48,9 @@ namespace BloknotMVC.Controllers
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
-            using var context = new BloknotDBContext();
+            Record? record = await _context.Records.FindAsync(id); // Read/Write (IO)
 
-            Record? record = await context.Records.FindAsync(id);
+            await _context.SaveChangesAsync();
 
             return View(record);
         }
@@ -44,11 +58,24 @@ namespace BloknotMVC.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(Record record)
         {
-            using var context = new BloknotDBContext();
 
-            context.Records.Update(record);
+            _context.Records.Update(record);
 
-            await context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Index");
+        }
+
+        public async Task<IActionResult> Delete(int id)
+        {
+            Record? record = await _context.Records.FindAsync(id);
+
+            if (record == null)
+                return NotFound();
+
+            _context.Records.Remove(record);
+
+            await _context.SaveChangesAsync();
 
             return RedirectToAction("Index");
         }
